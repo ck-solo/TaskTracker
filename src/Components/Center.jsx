@@ -5,6 +5,8 @@ function Center({ addTask, tasks, isDark }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Low");
+
+  // 🔥 Separate error state
   const [errors, setErrors] = useState({
     title: "",
     description: ""
@@ -12,13 +14,22 @@ function Center({ addTask, tasks, isDark }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    let newErrors = { title: "", description: "" };
+
+    let newErrors = {
+      title: "",
+      description: ""
+    };
+
+    // 🔥 Manual Validation Logic
     if (!title.trim()) {
       newErrors.title = "Please enter a task title.";
     }
+
     if (!description.trim()) {
       newErrors.description = "Please enter task description.";
     }
+
+    // Stop if any error
     if (newErrors.title || newErrors.description) {
       setErrors(newErrors);
       return;
@@ -27,19 +38,21 @@ function Center({ addTask, tasks, isDark }) {
     const newTask = {
       id: Date.now(),
       title,
-      description,
-      level: priority,
+      description, 
       completed: false,
+      time: 0,
       running: false,
-      time: 0
+      level: priority
     };
 
     addTask(newTask);
+ 
     setTitle("");
     setDescription("");
     setPriority("Low");
     setErrors({ title: "", description: "" });
   };
+
   const active = tasks.filter(t => !t.completed).length;
   const completed = tasks.filter(t => t.completed).length;
 
@@ -49,55 +62,95 @@ function Center({ addTask, tasks, isDark }) {
         ? "bg-gray-800 border border-gray-700 text-white"
         : "bg-white border border-gray-100 text-black"
     }`}>
+
       <h1 className="text-2xl font-bold mb-4">Add New Task</h1>
+
       <div className="flex gap-2 mb-6 text-sm font-semibold">
         <span className={`${isDark ? "bg-gray-700" : "bg-gray-100"} px-3 py-1 rounded-lg`}>
           All: {tasks.length}
         </span>
+
         <span className="px-3 py-1 bg-blue-500 text-white rounded-lg">
           Active: {active}
         </span>
+
         <span className="px-3 py-1 bg-green-500 text-white rounded-lg">
           Done: {completed}
         </span>
       </div>
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="text"
-          placeholder="Task Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className={`border rounded-xl px-4 py-3 shadow-inner outline-none ${
-            isDark
-              ? "bg-gray-700 border-gray-600"
-              : "bg-gray-50 border-gray-200"
-          }`}
-        />
-        <textarea
-          rows="4"
-          placeholder="Enter your task"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className={`border rounded-xl px-4 py-3 shadow-inner resize-none outline-none ${
-            isDark
-              ? "bg-gray-700 border-gray-600"
-              : "bg-gray-50 border-gray-200"
-          }`}
-        />
+ 
+        <div>
+          <input
+            type="text"
+            placeholder="Task Title"
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+ 
+              if (errors.title) {
+                setErrors(prev => ({ ...prev, title: "" }));
+              }
+            }}
+            className={`border rounded-xl px-4 py-3 shadow-inner outline-none w-full ${
+              errors.title
+                ? "border-red-500"
+                : isDark
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-gray-50 border-gray-200 text-black"
+            }`}
+          />
+
+          {errors.title && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.title}
+            </p>
+          )}
+        </div>
+ 
+        <div>
+          <textarea
+            rows="4"
+            placeholder="Enter your task"
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value);
+ 
+              if (errors.description) {
+                setErrors(prev => ({ ...prev, description: "" }));
+              }
+            }}
+            className={`border rounded-xl px-4 py-3 shadow-inner resize-none outline-none w-full ${
+              errors.description
+                ? "border-red-500"
+                : isDark
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-gray-50 border-gray-200 text-black"
+            }`}
+          />
+
+          {errors.description && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.description}
+            </p>
+          )}
+        </div> 
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
-          className={`border rounded-xl px-4 py-3 ${
+          className={`border rounded-xl px-4 py-3 shadow-inner outline-none ${
             isDark
-              ? "bg-gray-700 border-gray-600"
-              : "bg-gray-50 border-gray-200"
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-gray-50 border-gray-200 text-black"
           }`}
         >
           <option value="Low">Low Priority</option>
           <option value="Medium">Medium Priority</option>
           <option value="High">High Priority</option>
         </select>
-        <button className="w-fit px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl">
+
+        <button className="w-fit px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-md transition">
           Add Task
         </button>
 

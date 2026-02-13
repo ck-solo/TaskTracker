@@ -1,161 +1,209 @@
 import React, { useState, useRef } from "react";
 
 function Bottom({ tasks, setTasks, isDark }) {
-  const [searchText, setSearchText] = useState("");
-  const timerRef = useRef(null);
+
+  const [search, setSearch] = useState("");
+  const intervalRef = useRef(null);
+ 
   function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    const showMinutes = String(minutes).padStart(2, "0");
-    const showSeconds = String(remainingSeconds).padStart(2, "0");
-    return showMinutes + ":" + showSeconds + "s";
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    const formattedMinutes = String(mins).padStart(2, "0");
+    const formattedSeconds = String(secs).padStart(2, "0");
+
+    return `${formattedMinutes}:${formattedSeconds}s`;
   }
-
-  const filteredTasks = tasks.filter(function (task) {
-    const title = task.title.toLowerCase();
-    const search = searchText.toLowerCase();
-    return title.includes(search);
-  });
-
+ 
+  const filteredTasks = tasks.filter((task) =>
+    task.title.toLowerCase().includes(search.toLowerCase())
+  );
+ 
   function startGlobalTimer() {
-    if (timerRef.current !== null) {
-      return;
-    }
-    timerRef.current = setInterval(function () {
-      let updatedTasks = tasks.map(function (task) {
-        if (task.running === true && task.completed === false) {
-          return {
-            ...task,
-            time: task.time + 1
-          };
-        }
-        return task;
-      });
+    if (intervalRef.current !== null) return;
 
-      setTasks(updatedTasks);
-      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    intervalRef.current = setInterval(() => {
+      setTasks((previousTasks) => {
+
+        const updated = previousTasks.map((task) => {
+          if (task.running && !task.completed) {
+            return { ...task, time: task.time + 1 };
+          }
+          return task;
+        });
+
+        localStorage.setItem("tasks", JSON.stringify(updated));
+        return updated;
+      });
     }, 1000);
   }
 
   function stopGlobalTimer() {
-    if (timerRef.current !== null) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
   }
+ 
+  function startTask(task) {
+    if (task.completed) return;
 
-  function startTask(selectedTask) {
-    if (selectedTask.completed === true) return;
-    let updatedTasks = tasks.map(function (task) {
-      if (task.id === selectedTask.id) {
-        return { ...task, running: true };
-      }
-      return { ...task, running: false };
+    setTasks((previousTasks) => {
+
+      const updatedTasks = previousTasks.map((t) =>
+        t.id === task.id
+          ? { ...t, running: true }
+          : { ...t, running: false }
+      );
+
+      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      startGlobalTimer();
+
+      return updatedTasks;
     });
-    setTasks(updatedTasks);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-    startGlobalTimer();
   }
 
-  function pauseTask(selectedTask) {
-    let updatedTasks = tasks.map(function (task) {
-      if (task.id === selectedTask.id) {
-        return { ...task, running: false };
-      }
-      return task;
-    });
+  function pauseTask(task) {
+    setTasks((previousTasks) => {
 
-    const runningTaskExists = updatedTasks.some(function (task) {
-      return task.running === true && task.completed === false;
+      const updatedTasks = previousTasks.map((t) =>
+        t.id === task.id ? { ...t, running: false } : t
+      );
+
+      const anyRunning = updatedTasks.some(
+        (t) => t.running && !t.completed
+      );
+
+      if (!anyRunning) stopGlobalTimer();
+
+      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      return updatedTasks;
     });
-    if (!runningTaskExists) {
-      stopGlobalTimer();
-    }
-    setTasks(updatedTasks);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
   }
 
-  function completeTask(selectedTask) {
-    let updatedTasks = tasks.map(function (task) {
-      if (task.id === selectedTask.id) {
-        return {
-          ...task,
-          completed: !task.completed,
-          running: false
-        };
-      }
-      return task;
-    });
+  function completeTask(task) {
+    setTasks((previousTasks) => {
 
-    stopGlobalTimer();
-    setTasks(updatedTasks);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      const updatedTasks = previousTasks.map((t) =>
+        t.id === task.id
+          ? { ...t, completed: !t.completed, running: false }
+          : t
+      );
+
+      const anyRunning = updatedTasks.some(
+        (t) => t.running && !t.completed
+      );
+
+      if (!anyRunning) stopGlobalTimer();
+
+      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      return updatedTasks;
+    });
   }
 
   function deleteTask(taskId) {
-    const updatedTasks = tasks.filter(function (task) {
-      return task.id !== taskId;
-    });
+    setTasks((previousTasks) => {
 
-    setTasks(updatedTasks);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      const updatedTasks = previousTasks.filter(
+        (t) => t.id !== taskId
+      );
+
+      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      return updatedTasks;
+    });
   }
- 
+
+   
   function getLevelColor(level) {
     if (!level) return "border-gray-300";
-    if (level === "Low") return "border-green-500";
-    if (level === "Medium") return "border-yellow-500";
-    if (level === "High") return "border-red-500";
+
+    const value = level.toLowerCase();
+
+    if (value === "low") return "border-green-500";
+    if (value === "medium") return "border-yellow-500";
+    if (value === "high") return "border-red-500";
+
     return "border-gray-300";
   }
- 
+
   return (
     <div className={`p-6 rounded-2xl shadow-xl ${
       isDark
         ? "bg-gray-800 border border-gray-700 text-white"
         : "bg-white border border-gray-200 text-black"
     }`}>
- 
       <input
-        placeholder="Search task..."
-        value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
-        className="w-full mb-5 px-4 py-3 rounded-xl"
-      />
+        placeholder="🔍 Search task..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className={`w-full mb-5 px-4 py-3 rounded-xl outline-none ${
+          isDark
+            ? "bg-gray-700 border border-gray-600"
+            : "bg-gray-50 border border-gray-200"
+        }`}
+      />     
+      {filteredTasks.map((task) => (
+        <div
+          key={task.id}
+          className={`p-4 mb-4 rounded-xl border-l-4 ${getLevelColor(task.level)}
+          ${isDark ? "bg-gray-700" : "bg-gray-50"}`}
+        >
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={() => completeTask(task)}
+              />
+              <h3 className={`font-bold ${
+                task.completed && "line-through text-gray-400"
+              }`}>
+                {task.title}
+              </h3>
+              <span className={`text-xs px-2 py-1 rounded-full font-semibold
+                ${
+                  task.level === "Low"
+                    ? "bg-green-100 text-green-700"
+                    : task.level === "Medium"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-red-100 text-red-700"
+                }`}>
+                {task.level}
+              </span>
+            </div>
+            <button
+              onClick={() => deleteTask(task.id)}
+              className="text-red-500 hover:text-red-700 text-lg"
+            >
+              🗑
+            </button>
+          </div>
 
-      {filteredTasks.map(function (task) {
-        return (
-          <div
-            key={task.id}
-            className={`p-4 mb-4 rounded-xl border-l-4 ${getLevelColor(task.level)}
-            ${isDark ? "bg-gray-700" : "bg-gray-50"}`}
-          > 
-            <div className="flex justify-between">
-              <div className="flex gap-2">
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  onChange={() => completeTask(task)}
-                />
-                <h3 className={task.completed ? "line-through" : ""}>
-                  {task.title}
-                </h3>
-              </div>
-              <button onClick={() => deleteTask(task.id)}>
-                🗑
+          <p className="mt-1 text-sm opacity-80">
+            {task.description}
+          </p>
+          <div className="flex justify-between items-center mt-3">
+            
+            <span>⏱ {formatTime(task.time)}</span>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => startTask(task)}
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                ▶
               </button>
-            </div> 
-            <p className="text-sm mt-1">{task.description}</p>
-            <div className="flex justify-between mt-3">
-              <span>⏱ {formatTime(task.time)}</span>
-              <div className="flex gap-2">
-                <button onClick={() => startTask(task)}>▶</button>
-                <button onClick={() => pauseTask(task)}>❚❚</button>
-              </div>
+
+              <button
+                onClick={() => pauseTask(task)}
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-yellow-500 hover:bg-yellow-600 text-white"
+              >
+                ❚❚
+              </button>
             </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }

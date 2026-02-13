@@ -14,7 +14,8 @@ function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "light";
   });
- 
+
+  // ✅ RENDER COUNTER (updates on EVERY re-render)
   const renderCount = useRef(0);
 
   useEffect(() => {
@@ -56,6 +57,8 @@ function App() {
         > 
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold">🗂 Task Manager</h2>
+
+
           </div>
 
           <div
