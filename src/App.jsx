@@ -4,7 +4,6 @@ import Center from "./Components/Center";
 import Bottom from "./Components/Bottom";
 
 function App() {
-
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem("tasks");
     if (!saved || saved === "undefined") return [];
@@ -15,7 +14,6 @@ function App() {
     return localStorage.getItem("theme") || "light";
   });
 
-  // ✅ RENDER COUNTER (updates on EVERY re-render)
   const renderCount = useRef(0);
 
   useEffect(() => {
@@ -41,37 +39,37 @@ function App() {
 
   return (
     <div
-      className={`min-h-screen flex justify-center py-10 transition-all duration-300 ${
+      className={`min-h-screen flex justify-center px-4 sm:px-6 lg:px-10 py-6 sm:py-10 transition-all duration-300 ${
         isDark
           ? "bg-gray-900 text-white"
-          : "bg-linear-to-br from-gray-100 to-gray-200 text-black"
+          : "bg-gradient-to-br from-gray-100 to-gray-200 text-black"
       }`}
     >
-      <div className="w-full lg:w-3/5 space-y-6">
-       <div
-          className={`rounded-2xl shadow-lg px-4 py-4 flex justify-between items-center ${
+      <div className="w-full max-w-6xl space-y-6">
+        <div
+          className={`rounded-2xl shadow-lg px-4 sm:px-6 py-4 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-start sm:items-center ${
             isDark
               ? "bg-gray-800 border border-gray-700"
               : "bg-white border border-gray-200"
           }`}
-        > 
+        >
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold">🗂 Task Manager</h2>
-
-
+            <h2 className="text-xl sm:text-2xl font-bold">
+              🗂 Task Manager
+            </h2>
           </div>
 
           <div
             onClick={toggleTheme}
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex flex-wrap items-center gap-3 cursor-pointer"
           >
-            <span className="text-xl">
+            <span className="text-lg sm:text-xl">
               {isDark ? "☀️" : "🌙"}
             </span>
-            <span className="hidden sm:block">
+            <span className="text-sm sm:text-base">
               {isDark ? "Light Mode" : "Dark Mode"}
             </span>
-              <span className="px-3 py-1 rounded-full bg-purple-500 text-white text-sm">
+            <span className="px-3 py-1 rounded-full bg-purple-500 text-white text-xs sm:text-sm">
               Render: {renderCount.current}
             </span>
           </div>
@@ -80,7 +78,6 @@ function App() {
         <Top tasks={tasks} isDark={isDark} />
         <Center addTask={addTask} tasks={tasks} isDark={isDark} />
         <Bottom tasks={tasks} setTasks={updateTask} isDark={isDark} />
-
       </div>
     </div>
   );

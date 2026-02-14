@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 
 function Center({ addTask, tasks, isDark }) {
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Low");
-
-  // 🔥 Separate error state
   const [errors, setErrors] = useState({
     title: "",
-    description: ""
+    description: "",
   });
 
   const handleSubmit = (e) => {
@@ -17,19 +14,16 @@ function Center({ addTask, tasks, isDark }) {
 
     let newErrors = {
       title: "",
-      description: ""
+      description: "",
     };
 
-    // 🔥 Manual Validation Logic
     if (!title.trim()) {
       newErrors.title = "Please enter a task title.";
     }
-
     if (!description.trim()) {
       newErrors.description = "Please enter task description.";
     }
 
-    // Stop if any error
     if (newErrors.title || newErrors.description) {
       setErrors(newErrors);
       return;
@@ -38,49 +32,49 @@ function Center({ addTask, tasks, isDark }) {
     const newTask = {
       id: Date.now(),
       title,
-      description, 
+      description,
       completed: false,
       time: 0,
       running: false,
-      level: priority
+      level: priority,
     };
 
     addTask(newTask);
- 
+
     setTitle("");
     setDescription("");
     setPriority("Low");
     setErrors({ title: "", description: "" });
   };
 
-  const active = tasks.filter(t => !t.completed).length;
-  const completed = tasks.filter(t => t.completed).length;
+  const active = tasks.filter((t) => !t.completed).length;
+  const completed = tasks.filter((t) => t.completed).length;
 
   return (
-    <div className={`px-6 py-4 rounded-2xl shadow-xl mt-6 ${
-      isDark
-        ? "bg-gray-800 border border-gray-700 text-white"
-        : "bg-white border border-gray-100 text-black"
-    }`}>
+    <div
+      className={`px-4 sm:px-6 py-4 rounded-2xl shadow-xl mt-6 ${
+        isDark
+          ? "bg-gray-800 border border-gray-700 text-white"
+          : "bg-white border border-gray-100 text-black"
+      }`}
+    >
+      <h1 className="text-xl sm:text-2xl font-bold mb-4">
+        Add New Task
+      </h1>
 
-      <h1 className="text-2xl font-bold mb-4">Add New Task</h1>
-
-      <div className="flex gap-2 mb-6 text-sm font-semibold">
+      <div className="flex flex-wrap gap-2 mb-6 text-sm font-semibold">
         <span className={`${isDark ? "bg-gray-700" : "bg-gray-100"} px-3 py-1 rounded-lg`}>
           All: {tasks.length}
         </span>
-
         <span className="px-3 py-1 bg-blue-500 text-white rounded-lg">
           Active: {active}
         </span>
-
         <span className="px-3 py-1 bg-green-500 text-white rounded-lg">
           Done: {completed}
         </span>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
- 
         <div>
           <input
             type="text"
@@ -88,9 +82,8 @@ function Center({ addTask, tasks, isDark }) {
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
- 
               if (errors.title) {
-                setErrors(prev => ({ ...prev, title: "" }));
+                setErrors((prev) => ({ ...prev, title: "" }));
               }
             }}
             className={`border rounded-xl px-4 py-3 shadow-inner outline-none w-full ${
@@ -101,14 +94,11 @@ function Center({ addTask, tasks, isDark }) {
                 : "bg-gray-50 border-gray-200 text-black"
             }`}
           />
-
           {errors.title && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.title}
-            </p>
+            <p className="text-red-500 text-sm mt-1">{errors.title}</p>
           )}
         </div>
- 
+
         <div>
           <textarea
             rows="4"
@@ -116,9 +106,8 @@ function Center({ addTask, tasks, isDark }) {
             value={description}
             onChange={(e) => {
               setDescription(e.target.value);
- 
               if (errors.description) {
-                setErrors(prev => ({ ...prev, description: "" }));
+                setErrors((prev) => ({ ...prev, description: "" }));
               }
             }}
             className={`border rounded-xl px-4 py-3 shadow-inner resize-none outline-none w-full ${
@@ -129,13 +118,13 @@ function Center({ addTask, tasks, isDark }) {
                 : "bg-gray-50 border-gray-200 text-black"
             }`}
           />
-
           {errors.description && (
             <p className="text-red-500 text-sm mt-1">
               {errors.description}
             </p>
           )}
-        </div> 
+        </div>
+
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
@@ -150,10 +139,9 @@ function Center({ addTask, tasks, isDark }) {
           <option value="High">High Priority</option>
         </select>
 
-        <button className="w-fit px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-md transition">
+        <button className="w-full sm:w-fit px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-md transition">
           Add Task
         </button>
-
       </form>
     </div>
   );
